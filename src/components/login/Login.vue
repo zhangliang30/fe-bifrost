@@ -23,7 +23,7 @@
     </div>
 </template>
 
-<script>
+<script> 
 export default {
     data () {
         // 密码规则: 大小写字母、数字和特殊符号至少包含两种
@@ -51,7 +51,10 @@ export default {
                 ],
                 password: [
                     // 密码通过上面定义的check函数进行校验
-                    {required: true, validator: passwordCheck, trigger: 'blur' }
+                    {
+                        required: true, 
+                        // validator: passwordCheck,
+                         trigger: 'blur' }
                 ]
             }
         }
@@ -59,14 +62,23 @@ export default {
     methods: {
         // 点击登录按钮后触发login函数
         login() {
-            this.$refs['loginRef'].validate((valid) => {
+            this.$refs['loginRef'].validate(async valid => {
                 // 规则预校验
                 if (!valid) {
                     return;
                 }
                 // 校验成功，发起登录请求
-                console.log(this.$http.post('', this.loginForm));
-                
+                const {data: res} = await this.$http.post('login', this.loginForm);
+                if (res.meta.status != 200) {
+                    // 登录失败
+                    return this.$message({
+                        message: res.meta.msg,
+                        type: 'error'
+                    });
+                }
+                // 登录成功保存token并跳转
+                window.sessionStorage.setItem('token', res.data.token);
+                this.$router.push('/home');
             })
         }
     }
